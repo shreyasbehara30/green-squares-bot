@@ -19,3 +19,7 @@ venv/
 # GitHub Actions cache
 .github/workflows/*.log
 .github/workflows/*.bak
+
+# Bot tracking files (v2)
+.repo_tracker.json
+.commit_tracker.json

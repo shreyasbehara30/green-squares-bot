@@ -1,11 +1,9 @@
-name: Natural GitHub Activity Bot
+name: Green Squares Bot v2.0 - Multi-Repo
 
 on:
   schedule:
-    - cron: '0 6 * * *'    # 11:30 AM IST
-    - cron: '0 12 * * *'   # 5:30 PM IST
-    - cron: '45 15 * * *'  # 9:15 PM IST
-  workflow_dispatch:
+    - cron: '0 10 * * *'   # Once daily at 10:00 AM UTC
+  workflow_dispatch:       # Manual trigger
 
 jobs:
   commit:
@@ -14,44 +12,37 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Important for rebase and push
+          fetch-depth: 0
 
-      - name: Set up Git identity as shreyasbehara30
+      - name: Set up Git identity
         run: |
           git config user.name "shreyasbehara30"
-          git config user.email " 167645794+shreyasbehara30@users.noreply.github.com"
+          git config user.email "167645794+shreyasbehara30@users.noreply.github.com"
 
-      - name: Install Python & pytz
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Run v2 Bot (Multi-Repository Support)
         run: |
-          sudo apt-get update
-          sudo apt-get install -y python3 python3-pip
-          pip install pytz
+          python3 commit_v2.py
 
-      - name: Run commit script
+      - name: Pull latest changes
         run: |
-          python3 commit.py
+          git pull origin main --rebase || echo "No remote changes to pull"
 
-      - name: Stage files if changed (pre-pull)
+      - name: Push changes if any
         run: |
           if [ -n "$(git status --porcelain)" ]; then
-            echo "📌 Pre-pull changes found. Committing..."
-            git add .
-            git commit -m "📌 Pre-pull auto-commit to avoid rebase error" || echo "Nothing to commit"
-          else
-            echo "✅ No local changes to stage."
-          fi
-
-      - name: Pull latest changes before pushing
-        run: |
-          git pull origin main --rebase
-
-      - name: Push if commits are ahead
-        run: |
-          AHEAD=$(git rev-list --count origin/main..HEAD)
-          echo "Local branch is ahead by $AHEAD commit(s)."
-          if [ $AHEAD -gt 0 ]; then
-            echo "🔄 Changes detected. Pushing..."
+            echo "📤 Pushing changes..."
             git push origin main
           else
-            echo "✅ No new commits to push."
+            AHEAD=$(git rev-list --count origin/main..HEAD 2>/dev/null || echo "0")
+            if [ "$AHEAD" -gt 0 ]; then
+              echo "🔄 Pushing $AHEAD commit(s)..."
+              git push origin main
+            else
+              echo "✅ No changes to push"
+            fi
           fi
