@@ -33,7 +33,7 @@ class MultiRepoBot:
     def load_config(self, config_path):
         """Load bot configuration from JSON file."""
         try:
-            with open(config_path, 'r') as f:
+            with open(config_path, 'r', encoding='utf-8') as f:
                 config = json.load(f)
             print(f"✅ Configuration loaded from {config_path}")
             return config
